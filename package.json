@@ -5,11 +5,11 @@
   "author": {
     "name": "TonyStarkJr2021"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/TonyStarkJr2021/komari-theme-Gloria-Universe.git"
   },
-  "license": "MIT",
   "engines": {
     "node": "^20.19.0 || >=22.12.0",
     "bun": ">=1.2.0"
