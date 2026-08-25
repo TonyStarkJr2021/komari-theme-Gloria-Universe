@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">GLORIA UNIVERSE Crystal G</title>
+  <desc id="desc">An original faceted crystal enclosing the letter G</desc>
+  <defs>
+    <linearGradient id="gem" x1="20" y1="16" x2="108" y2="116" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#57D6FF"/>
+      <stop offset=".46" stop-color="#9B5CFF"/>
+      <stop offset=".78" stop-color="#FF7AC8"/>
+      <stop offset="1" stop-color="#FFD77A"/>
+    </linearGradient>
+    <radialGradient id="core" cx="50%" cy="45%" r="58%">
+      <stop stop-color="#fff" stop-opacity=".25"/>
+      <stop offset="1" stop-color="#9B5CFF" stop-opacity=".04"/>
+    </radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <path d="M64 5 106 29 119 72 91 113 37 113 9 72 22 29Z" fill="#090B20" fill-opacity=".76" stroke="url(#gem)" stroke-width="3" filter="url(#glow)"/>
+  <path d="m64 5 16 34 26-10-18 35 31 8-36 10 8 31-27-21-27 21 8-31L9 72l31-8-18-35 26 10Z" fill="url(#core)" stroke="url(#gem)" stroke-opacity=".42"/>
+  <path d="M84 46c-5-7-12-10-21-10-17 0-29 12-29 29s12 29 29 29c10 0 19-4 25-11V63H63v12h12v4c-3 2-7 3-11 3-10 0-17-7-17-17s7-17 17-17c5 0 9 2 13 6Z" fill="none" stroke="url(#gem)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#fff">
+    <path d="m102 10 2 6 6 2-6 2-2 6-2-6-6-2 6-2Z"/>
+    <path d="m18 94 1.5 4.5L24 100l-4.5 1.5L18 106l-1.5-4.5L12 100l4.5-1.5Z" opacity=".8"/>
+  </g>
+</svg>
