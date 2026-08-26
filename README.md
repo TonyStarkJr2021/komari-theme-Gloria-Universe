@@ -14,7 +14,7 @@ Komari × G.E.M. 邓紫棋粉丝向监控主题。
 
 ## 主题信息
 
-- 当前版本：`1.5.1`
+- 当前版本：`1.5.2`
 - 基础工程：Komari Glassmorphism v3（MIT）
 - 技术栈：Vue 3、Vite、Tailwind CSS v4、Pinia
 - 兼容范围：沿用基础工程的 Komari 1.2.x Metric Store 与旧接口 fallback
@@ -25,7 +25,7 @@ Komari × G.E.M. 邓紫棋粉丝向监控主题。
 - 原创 `Crystal G` 品牌标志
 - 原创舞台深空背景，使用紫、蓝、粉、香槟金宝石折射色
 - `GLORIA STAR NETWORK` 星网地图与 I AM GLORIA 2.0 婚纱舞台彩蛋原图
-- 世界地图节点橙金呼吸光、地区板块悬停高亮与键盘操作支持
+- 世界地图按国家或地区聚合节点：存在在线节点时显示橙金呼吸点，全部离线时切换为红色呼吸点，并支持地区板块悬停高亮与键盘操作
 - `STARLIGHT ON`、`STAR SLEEPING`、`CORE POWER`、`ENERGY FLOW` 状态语言
 - CPU、内存、磁盘、流量分别映射为核心、水晶记忆、星库与能量
 - 节点歌曲标签优先不重复分配，支持管理员配置授权的 20–30 秒悬停试听片段
@@ -42,7 +42,7 @@ Komari × G.E.M. 邓紫棋粉丝向监控主题。
 
 1. 登录 Komari 后台。
 2. 进入“设置 → 主题管理”。
-3. 上传 `GLORIA-UNIVERSE-Komari-Theme-v1.5.1.zip`。
+3. 上传对应版本的 `GLORIA-UNIVERSE-Komari-Theme-v*.zip`。
 4. 启用 `Gloria Universe`。
 5. 在“Gloria Universe主题设置”中调整背景、卡片、歌曲标签、试听和动画。
 

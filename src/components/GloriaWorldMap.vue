@@ -209,7 +209,7 @@ onMounted(async () => {
           v-for="marker in markers"
           :key="marker.code"
           class="gloria-world-map__marker"
-          :class="{ 'is-active': marker.code === activeMarkerCode }"
+          :class="{ 'is-active': marker.code === activeMarkerCode, 'is-offline': marker.onlineServers === 0 }"
           :transform="`translate(${marker.x} ${marker.y})`"
           :data-map-marker-code="marker.code"
           role="button"
@@ -230,7 +230,9 @@ onMounted(async () => {
     <div class="gloria-world-map__status" aria-live="polite">
       <template v-if="activeMarker">
         <strong>{{ activeMarker.label }}</strong>
-        <span>{{ activeMarker.onlineServers }} / {{ activeMarker.servers }} STARS ONLINE</span>
+        <span :class="{ 'is-offline': activeMarker.onlineServers === 0 }">
+          {{ activeMarker.onlineServers }} / {{ activeMarker.servers }} {{ activeMarker.onlineServers > 0 ? 'STARS ONLINE' : 'STARS OFFLINE' }}
+        </span>
         <span v-if="activeMarkerAudioTrack">♫ 《{{ activeMarkerAudioTrack }}》</span>
       </template>
       <template v-else>
@@ -346,6 +348,23 @@ onMounted(async () => {
   fill: #dcfce7;
   stroke: #4ade80;
 }
+.gloria-world-map__marker.is-offline .gloria-world-map__pulse {
+  stroke: #ef4444;
+}
+.gloria-world-map__marker.is-offline .gloria-world-map__halo {
+  fill: rgb(239 68 68 / 0.3);
+}
+.gloria-world-map__marker.is-offline .gloria-world-map__dot {
+  fill: #fecaca;
+  stroke: #ef4444;
+}
+.gloria-world-map__marker.is-active.is-offline .gloria-world-map__halo {
+  fill: rgb(251 113 133 / 0.5);
+}
+.gloria-world-map__marker.is-active.is-offline .gloria-world-map__dot {
+  fill: #fff1f2;
+  stroke: #fb7185;
+}
 
 .gloria-world-map__status {
   position: absolute;
@@ -367,6 +386,9 @@ onMounted(async () => {
   color: #75defd;
   font-size: 0.42rem;
   letter-spacing: 0.08em;
+}
+.gloria-world-map__status span.is-offline {
+  color: #fb7185;
 }
 
 :global(:root:not(.dark) .gloria-world-map) {
