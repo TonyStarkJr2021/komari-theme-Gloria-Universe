@@ -29,6 +29,7 @@ export interface VisualFixtureOptions {
   pingTaskOrdering?: boolean
   generalCardKeys?: string[]
   audioPreview?: boolean
+  visitorInfoEnabled?: boolean
 }
 
 function uuidFor(index: number): string {
@@ -353,7 +354,7 @@ export async function installKomariFixture(page: Page, options: VisualFixtureOpt
     earthRenderer: options.earthRenderer ?? 'realistic',
     hideEarth: options.hideEarth ?? false,
     stopEarth: true,
-    visitorInfoEnabled: true,
+    visitorInfoEnabled: options.visitorInfoEnabled ?? true,
     colorVisionMode: options.colorVisionFriendly ? '色觉友好' : '标准',
     hideAdminEntryWhenLoggedOut: false,
     hidePriceWhenLoggedOut: false,
