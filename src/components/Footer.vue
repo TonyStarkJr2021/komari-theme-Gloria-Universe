@@ -25,8 +25,8 @@ const formattedServerVersion = computed(() => serverVersion.value?.version ?? ''
 
 <template>
   <footer class="w-full max-w-[1280px] mx-auto p-4">
-    <div class="flex w-full flex-row justify-between gap-4 text-xs text-muted-foreground">
-      <div class="flex gap-1 items-center">
+    <div class="flex w-full flex-row flex-nowrap items-center justify-between gap-3 text-xs text-muted-foreground">
+      <div data-footer-credit="powered" class="flex shrink-0 items-center gap-1 whitespace-nowrap">
         Powered by
         <DataTooltip
           as="span"
@@ -41,8 +41,8 @@ const formattedServerVersion = computed(() => serverVersion.value?.version ?? ''
           </a>
         </DataTooltip>
       </div>
-      <div class="flex flex-wrap gap-1 items-center justify-end text-right">
-        Theme GLORIA UNIVERSE · by
+      <div data-footer-credit="theme" class="flex shrink-0 items-center justify-end gap-1 whitespace-nowrap text-right">
+        Theme by
         <DataTooltip
           as="span"
           placement="top"

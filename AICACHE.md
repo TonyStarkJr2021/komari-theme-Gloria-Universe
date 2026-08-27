@@ -690,3 +690,12 @@
 - Version source and README now report `1.5.3`. No Git commit, push, tag or GitHub upload was performed.
 - Validation passed: ESLint, Vue type-checking, production Vite build, `git diff --check`, archive structure/version inspection, and the complete local Chrome suite (`22/22`). The suite includes a new direct deep-space/starlight toggle regression.
 - Local deliverable: `GLORIA-UNIVERSE-Komari-Theme-v1.5.3.zip`, SHA-256 `7A1D09234544D169B5AD9A8430F1E67D629AC69D2B783CF5CB8964C084A8F454`; archive contains manifest version `1.5.3`, `preview.png`, and `dist/index.html`.
+
+## 2026-08-27 GLORIA UNIVERSE v1.5.4 local sidebar-label fix
+
+- Changed the managed configuration menu label from `Gloria Universe主题设置` to `主题设置`, preventing the Komari sidebar item from wrapping in its fixed-width navigation column.
+- Kept the public theme name `Gloria Universe`, internal short identifier `GloriaUniverse`, and managed settings page title behavior unchanged.
+- Synchronized the README installation wording and bumped the candidate to `1.5.4`. The user completed local testing and explicitly authorized the formal GitHub release; commit, push, automated tag/Release, release notes, and asset verification are now in scope.
+- Validation passed: manifest JSON parsing, ESLint, Vue type-checking, production Vite build, the focused 390px mobile footer regression, the 1280px compact-card speed/traffic/pact overflow regression, the expiry-color regression, `git diff --check`, and archive inspection. Local deliverable: `GLORIA-UNIVERSE-Komari-Theme-v1.5.4.zip`, SHA-256 `3C4C90F595DFB84A6BB8A5A5A103F361612A76EF06ECD5269F6C2E5334A88FF0`; embedded configuration name is exactly `主题设置` and the archive contains `preview.png` plus `dist/index.html`.
+- Mobile follow-up: shortened the right credit to `Theme by TonyStarkJr2021` and made both footer credits non-wrapping, non-shrinking rows so `Powered by Komari Monitor` and the theme credit remain on one line at phone widths.
+- Desktop card follow-up: shortened the card-only prefixes from `星约余期` / `星约余值` to `余期` / `余值`, then restored equal flexible width to the speed and cumulative-traffic columns while the shorter pact column keeps a 5.5rem minimum. The desktop regression checks speed values through `1009 KB/s`, cumulative traffic, expiry, and remaining value for clipping; mobile card behavior is unchanged.

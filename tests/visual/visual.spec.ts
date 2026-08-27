@@ -52,6 +52,42 @@ test('home dark mobile', async ({ page }) => {
   await expect(page).toHaveScreenshot('home-dark-mobile.png', { fullPage: false })
 })
 
+test('mobile footer credits stay on one line', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await installKomariFixture(page, { dark: true, visitorInfoEnabled: false })
+  await openStablePage(page)
+
+  await expect(page.locator('[data-footer-credit="powered"]')).toContainText('Powered by Komari Monitor')
+  await expect(page.locator('[data-footer-credit="theme"]')).toContainText('Theme by TonyStarkJr2021')
+  for (const credit of await page.locator('[data-footer-credit]').all()) {
+    await expect.poll(() => credit.evaluate((element) => {
+      const style = getComputedStyle(element)
+      const lineHeight = Number.parseFloat(style.lineHeight)
+      return element.getBoundingClientRect().height <= lineHeight * 1.2
+    })).toBe(true)
+  }
+})
+
+test('desktop compact cards show complete traffic and pact information', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 })
+  await installKomariFixture(page, { dark: true })
+  await openStablePage(page)
+
+  const rows = page.locator('[data-node-remaining-info-row]')
+  await expect(rows.first()).toBeVisible()
+  const clippedRows = await rows.evaluateAll(elements => elements
+    .map(element => ({ text: element.textContent?.trim(), overflow: element.scrollWidth - element.clientWidth }))
+    .filter(item => item.overflow > 1))
+  expect(clippedRows).toEqual([])
+
+  const metricValues = page.locator('[data-node-compact-metric-value]')
+  await expect(metricValues.first()).toBeVisible()
+  const clippedValues = await metricValues.evaluateAll(elements => elements
+    .map(element => ({ text: element.textContent?.trim(), overflow: element.scrollWidth - element.clientWidth }))
+    .filter(item => item.overflow > 1))
+  expect(clippedValues).toEqual([])
+})
+
 test('header theme button toggles directly between deep-space and starlight', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 })
   await installKomariFixture(page, { dark: true })
@@ -205,12 +241,12 @@ test('node card expiry uses red through 5 days and yellow through 10 days', asyn
 
   const criticalCard = page.getByRole('button', { name: '查看节点 主控-洛杉矶 详情' })
   const warningCard = page.getByRole('button', { name: '查看节点 香港边缘节点-超长名称布局测试 详情' })
-  const criticalExpiry = criticalCard.getByText('星约余期', { exact: true }).locator('..')
-  const warningExpiry = warningCard.getByText('星约余期', { exact: true }).locator('..')
+  const criticalExpiry = criticalCard.getByText('余期', { exact: true }).locator('..')
+  const warningExpiry = warningCard.getByText('余期', { exact: true }).locator('..')
 
-  await expect(criticalExpiry).toContainText('星约余期5天')
+  await expect(criticalExpiry).toContainText('余期5天')
   await expect(criticalExpiry).toHaveClass(/text-destructive/)
-  await expect(warningExpiry).toContainText('星约余期10天')
+  await expect(warningExpiry).toContainText('余期10天')
   await expect(warningExpiry).toHaveClass(/text-warning/)
 })
 

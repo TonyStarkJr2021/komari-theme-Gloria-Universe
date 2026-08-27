@@ -14,11 +14,19 @@ Komari × G.E.M. 邓紫棋粉丝向监控主题。
 
 ## 主题信息
 
-- 当前版本：`1.5.3`
+- 当前版本：`1.5.4`
 - 基础工程：Komari Glassmorphism v3（MIT）
 - 技术栈：Vue 3、Vite、Tailwind CSS v4、Pinia
 - 兼容范围：沿用基础工程的 Komari 1.2.x Metric Store 与旧接口 fallback
 - 默认模式：深空模式
+
+## v1.5.4 更新
+
+- Komari 左侧栏入口精简为“主题设置”，避免窄侧栏文字换行。
+- 桌面端重新平衡实时网速、累计流量与星约信息三栏宽度。
+- 节点卡片将“星约余期 / 星约余值”精简为“余期 / 余值”，避免金额和流量截断。
+- 移动端页脚署名固定单行显示，保持 `Powered by Komari Monitor` 与 `Theme by TonyStarkJr2021` 清晰完整。
+- 新增桌面端卡片防截断和移动端页脚单行回归检查。
 
 ## 视觉实现
 
@@ -44,7 +52,7 @@ Komari × G.E.M. 邓紫棋粉丝向监控主题。
 2. 进入“设置 → 主题管理”。
 3. 上传对应版本的 `GLORIA-UNIVERSE-Komari-Theme-v*.zip`。
 4. 启用 `Gloria Universe`。
-5. 在“Gloria Universe主题设置”中调整背景、卡片、歌曲标签、试听和动画。
+5. 在“主题设置”中调整背景、卡片、歌曲标签、试听和动画。
 
 请上传构建生成的主题 ZIP，不要上传源码 ZIP。
 

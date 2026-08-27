@@ -80,7 +80,7 @@ const isMiniNodeCard = computed(() => appStore.nodeCardSize === 'mini')
 const nodeCardXSize = computed(() => appStore.nodeCardSize === 'large' ? 'large' : 'medium')
 const nodeCardContentClass = computed(() => appStore.nodeCardSize === 'large' ? 'gap-4' : isMiniNodeCard.value ? 'gap-2' : 'gap-3')
 const nodeCardContentPaddingClass = computed(() => isMiniNodeCard.value ? 'pb-2' : '')
-const nodeCardMetricGridClass = 'grid-cols-3'
+const nodeCardMetricGridClass = 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(5.5rem,1.1fr)]'
 const nodeCardMetricBoxClass = computed(() => isMiniNodeCard.value
   ? 'px-1 py-1'
   : appStore.nodeCardSize === 'compact' ? 'px-1.5 py-1.5' : 'px-2 py-1.5')
@@ -204,7 +204,7 @@ const remainingInfoTags = computed<RemainingInfoTag[]>(() => {
     items.push({ icon: 'tabler:calendar-stats', text: lang === 'zh-CN' ? '长期星约' : 'LONG-TERM PACT', className: expiryClass })
   }
   else if (lang === 'zh-CN') {
-    items.push({ icon: 'tabler:calendar-stats', prefix: '星约余期', value: String(days), unit: '天', className: expiryClass })
+    items.push({ icon: 'tabler:calendar-stats', prefix: '余期', value: String(days), unit: '天', className: expiryClass })
   }
   else {
     items.push({ icon: 'tabler:calendar-stats', prefix: 'PACT', value: String(days), unit: 'D LEFT', className: expiryClass })
@@ -214,7 +214,7 @@ const remainingInfoTags = computed<RemainingInfoTag[]>(() => {
     const value = isFreePrice(node.price)
       ? lang === 'zh-CN' ? '无' : 'N/A'
       : formatCurrencyValue(getRemainingValue(node.price, node.billing_cycle, node.expired_at), node.currency)
-    items.push({ icon: 'tabler:coins', prefix: lang === 'zh-CN' ? '星约余值' : 'PACT VALUE', value })
+    items.push({ icon: 'tabler:coins', prefix: lang === 'zh-CN' ? '余值' : 'PACT VALUE', value })
   }
   return items
 })
@@ -441,11 +441,11 @@ function hasRegion(region: string | null | undefined): boolean {
           <div class="flex flex-col gap-0.5 rounded-lg bg-slate-500/5 min-w-0 overflow-hidden" :class="nodeCardMetricBoxClass">
             <div class="text-[11px] text-success flex items-center gap-1">
               <Icon icon="tabler:chevron-up" width="11" height="11" />
-              <span class="truncate min-w-0 overflow-hidden">{{ formatBytesPerSecond(props.node.net_out ?? 0) }}</span>
+              <span data-node-compact-metric-value class="truncate min-w-0 overflow-hidden">{{ formatBytesPerSecond(props.node.net_out ?? 0) }}</span>
             </div>
             <div class="text-[11px] text-blue-600 flex items-center gap-1">
               <Icon icon="tabler:chevron-down" width="11" height="11" />
-              <span class="truncate min-w-0 overflow-hidden">{{ formatBytesPerSecond(props.node.net_in ?? 0) }}</span>
+              <span data-node-compact-metric-value class="truncate min-w-0 overflow-hidden">{{ formatBytesPerSecond(props.node.net_in ?? 0) }}</span>
             </div>
           </div>
 
@@ -453,20 +453,21 @@ function hasRegion(region: string | null | undefined): boolean {
           <div class="flex flex-col gap-0.5 rounded-lg bg-slate-500/5 min-w-0 overflow-hidden" :class="nodeCardMetricBoxClass">
             <div class="text-[11px] text-muted-foreground flex items-center gap-1">
               <Icon icon="tabler:upload" width="11" height="11" />
-              <span class="truncate min-w-0 overflow-hidden">{{ formatBytes(props.node.net_total_up ?? 0) }}</span>
+              <span data-node-compact-metric-value class="truncate min-w-0 overflow-hidden">{{ formatBytes(props.node.net_total_up ?? 0) }}</span>
             </div>
             <div class="text-[11px] text-muted-foreground flex items-center gap-1">
               <Icon icon="tabler:download" width="11" height="11" />
-              <span class="truncate min-w-0 overflow-hidden">{{ formatBytes(props.node.net_total_down ?? 0) }}</span>
+              <span data-node-compact-metric-value class="truncate min-w-0 overflow-hidden">{{ formatBytes(props.node.net_total_down ?? 0) }}</span>
             </div>
           </div>
 
           <!-- 第三列：有价格显示剩余天数+价格，否则显示负载 -->
-          <div class="flex flex-col gap-0.5 rounded-lg bg-slate-500/5 min-w-0 overflow-hidden" :class="nodeCardMetricBoxClass">
+          <div data-node-remaining-info class="flex min-w-0 flex-col gap-0.5 overflow-hidden rounded-lg bg-slate-500/5 !px-1" :class="nodeCardMetricBoxClass">
             <template v-if="remainingInfoTags.length">
               <div
                 v-for="(item, i) in remainingInfoTags" :key="i"
-                class="text-[11px] flex items-center gap-0.5"
+                data-node-remaining-info-row
+                class="flex min-w-0 items-center gap-0 whitespace-nowrap text-[11px]"
                 :class="item.className ?? 'text-muted-foreground'"
               >
                 <Icon :icon="item.icon" width="11" height="11" class="shrink-0" />

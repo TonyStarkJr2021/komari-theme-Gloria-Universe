@@ -2,13 +2,13 @@
   "name": "Gloria Universe",
   "short": "GloriaUniverse",
   "description": "邓紫棋粉丝向 GLORIA 数字宇宙监控主题：星辰节点、星网地图、舞台能量与 I AM GLORIA 彩蛋",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "author": "TonyStarkJr2021",
   "url": "https://github.com/TonyStarkJr2021/komari-theme-Gloria-Universe",
   "preview": "preview.png",
   "configuration": {
     "type": "managed",
-    "name": "Gloria Universe主题设置",
+    "name": "主题设置",
     "data": [
       { "name": "01 · 宇宙模式与基础连接", "type": "title" },
       { "key": "themeMode", "name": "默认主题模式", "type": "select", "default": "dark", "options": "beijing,light,dark", "help": "beijing=北京时间 07:00-18:59 使用星光模式、其余时间使用深空模式；light=星光模式；dark=深空模式。前端右上角按钮可仅为当前浏览器临时切换。" },
