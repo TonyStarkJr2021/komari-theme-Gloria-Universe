@@ -18,19 +18,8 @@ const isScrolled = inject<ReturnType<typeof ref<boolean>>>('isScrolled', ref(fal
 const siteFavicon = ref('/images/gloria/crystal-g.svg')
 
 const actionButtons = computed(() => {
-  const themeTitleMap = {
-    auto: appStore.managedThemeMode === 'beijing'
-      ? appStore.isBeijingDaytime ? '自动主题：北京时间日间' : '自动主题：北京时间夜间'
-      : appStore.managedThemeMode === 'light' ? '自动主题：后台浅色' : '自动主题：后台深色',
-    light: '星光模式',
-    dark: '深空模式',
-  } as const
-
-  const themeIconMap = {
-    auto: appStore.isDark ? 'icon-park-outline:moon' : 'icon-park-outline:sun-one',
-    light: 'icon-park-outline:sun-one',
-    dark: 'icon-park-outline:moon',
-  } as const
+  const nextThemeTitle = appStore.isDark ? '切换到星光模式' : '切换到深空模式'
+  const themeIcon = appStore.isDark ? 'icon-park-outline:sun-one' : 'icon-park-outline:moon'
 
   const buttons: Array<{ title: string, icon: string, action: string, pressed?: boolean }> = []
 
@@ -44,8 +33,8 @@ const actionButtons = computed(() => {
   }
 
   buttons.push({
-    title: `${themeTitleMap[appStore.themeMode]}（点击切换）`,
-    icon: themeIconMap[appStore.themeMode],
+    title: nextThemeTitle,
+    icon: themeIcon,
     action: 'toggleTheme',
   })
 

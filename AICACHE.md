@@ -681,3 +681,12 @@
 - Updated the manifest and store fallback custom-glass defaults to the actual v1.4.1 starlight/deep-space palette. Clarified custom background fallback, blur/overlay behavior, browser-local mode overrides and wide-screen visitor-card behavior.
 - Validation: JSON/settings audit passed for 50/50 keys, ESLint and Vue type-checking passed, the production build passed, and the Chrome visual suite passed 19/19.
 - Final deliverable: `GLORIA-UNIVERSE-Komari-Theme-v1.4.2.zip`, SHA-256 `FEDA5A6128028F63E459C9C6A9BC36F8C5759B3DF04D2511E22955F92E98DA0B`. Embedded archive verification confirmed version `1.4.2`, the five representative aligned settings phrases, `preview.png`, `dist/index.html`, and the starlight background asset.
+
+## 2026-08-27 GLORIA UNIVERSE v1.5.3 local release candidate
+
+- Removed `auto` from the frontend theme-button cycle. Backend-managed `beijing/light/dark` remains the initial policy, while each user click now directly toggles between deep-space and starlight and persists the browser override.
+- Reworded node-card lifecycle and billing copy as `星光持续`, `月度/年度星约`, `星约余期`, `星约余值`, `星光赠礼`, `长期星约` and `星约已结束`.
+- Reworded the home group and quick controls as `全部星辰`, `星辰珍藏`, `累计能量`, `能量输出`, `能量接收`, `能量峰值`, `沉睡星辰`, `过载星辰` and `星约将尽`; synchronized the corresponding managed-settings descriptions and thresholds.
+- Version source and README now report `1.5.3`. No Git commit, push, tag or GitHub upload was performed.
+- Validation passed: ESLint, Vue type-checking, production Vite build, `git diff --check`, archive structure/version inspection, and the complete local Chrome suite (`22/22`). The suite includes a new direct deep-space/starlight toggle regression.
+- Local deliverable: `GLORIA-UNIVERSE-Komari-Theme-v1.5.3.zip`, SHA-256 `7A1D09234544D169B5AD9A8430F1E67D629AC69D2B783CF5CB8964C084A8F454`; archive contains manifest version `1.5.3`, `preview.png`, and `dist/index.html`.

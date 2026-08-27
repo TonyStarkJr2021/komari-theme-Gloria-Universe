@@ -14,7 +14,7 @@ Komari × G.E.M. 邓紫棋粉丝向监控主题。
 
 ## 主题信息
 
-- 当前版本：`1.5.2`
+- 当前版本：`1.5.3`
 - 基础工程：Komari Glassmorphism v3（MIT）
 - 技术栈：Vue 3、Vite、Tailwind CSS v4、Pinia
 - 兼容范围：沿用基础工程的 Komari 1.2.x Metric Store 与旧接口 fallback

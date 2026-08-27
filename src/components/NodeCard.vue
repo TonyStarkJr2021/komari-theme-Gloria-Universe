@@ -13,7 +13,7 @@ import { formatBytesPerSecondWithConfig, formatBytesWithConfig, formatDateTime, 
 import { getDiskPercentage, getMemoryPercentage, getTrafficUsed, getTrafficUsedPercentage, hasTrafficLimit } from '@/utils/nodeMetricsHelper'
 import { getOSImage, getOSName } from '@/utils/osImageHelper'
 import { getRegionCode, getRegionDisplayName } from '@/utils/regionHelper'
-import { formatCurrencyValue, formatPriceWithCycle, getDaysUntilExpired, getExpireStatus, getRemainingValue, isFreePrice, parseTags } from '@/utils/tagHelper'
+import { formatCurrencyValue, formatPrice, getBillingCycleText, getDaysUntilExpired, getExpireStatus, getRemainingValue, isFreePrice, parseTags } from '@/utils/tagHelper'
 
 const props = withDefaults(defineProps<{
   node: NodeData
@@ -153,14 +153,32 @@ const showPrice = computed(() => appStore.privateFeaturesAllowed || !appStore.hi
 
 const uptimeDaysText = computed(() => {
   const days = getUptimeDays(props.node.uptime)
-  return appStore.lang === 'zh-CN' ? `在线 ${days} 天` : `${days} days online`
+  return appStore.lang === 'zh-CN' ? `星光持续 ${days} 天` : `STARLIGHT · ${days} DAYS`
 })
 
 const priceText = computed(() => {
   const node = props.node
   if (node.price === 0 || !showPrice.value)
     return ''
-  return formatPriceWithCycle(node.price, node.billing_cycle, node.currency, appStore.lang)
+  if (isFreePrice(node.price))
+    return appStore.lang === 'zh-CN' ? '星光赠礼' : 'STARLIGHT GIFT'
+
+  const price = formatPrice(node.price, node.currency, appStore.lang)
+  const cycle = getBillingCycleText(node.billing_cycle, appStore.lang)
+  if (appStore.lang !== 'zh-CN')
+    return `${cycle} STAR PACT · ${price}`
+
+  const themedCycles: Record<string, string> = {
+    月: '月度星约',
+    季: '季度星约',
+    半年: '半年星约',
+    年: '年度星约',
+    两年: '两年星约',
+    三年: '三年星约',
+    五年: '五年星约',
+    一次性: '一次星约',
+  }
+  return `${themedCycles[cycle] ?? `${cycle}星约`} · ${price}`
 })
 
 // 第三列：剩余天数（始终） + 剩余价值（仅在允许显示金额时），带图标与相邻列对齐
@@ -180,23 +198,23 @@ const remainingInfoTags = computed<RemainingInfoTag[]>(() => {
     items.push({ icon: 'tabler:calendar-stats', text: '-', className: expiryClass })
   }
   else if (status === 'expired') {
-    items.push({ icon: 'tabler:calendar-stats', text: lang === 'zh-CN' ? '已过期' : 'Expired', className: expiryClass })
+    items.push({ icon: 'tabler:calendar-stats', text: lang === 'zh-CN' ? '星约已结束' : 'STAR PACT ENDED', className: expiryClass })
   }
   else if (status === 'long_term') {
-    items.push({ icon: 'tabler:calendar-stats', text: lang === 'zh-CN' ? '长期' : 'Long-term', className: expiryClass })
+    items.push({ icon: 'tabler:calendar-stats', text: lang === 'zh-CN' ? '长期星约' : 'LONG-TERM PACT', className: expiryClass })
   }
   else if (lang === 'zh-CN') {
-    items.push({ icon: 'tabler:calendar-stats', prefix: '剩余', value: String(days), unit: '天', className: expiryClass })
+    items.push({ icon: 'tabler:calendar-stats', prefix: '星约余期', value: String(days), unit: '天', className: expiryClass })
   }
   else {
-    items.push({ icon: 'tabler:calendar-stats', prefix: 'left', value: String(days), unit: 'days', className: expiryClass })
+    items.push({ icon: 'tabler:calendar-stats', prefix: 'PACT', value: String(days), unit: 'D LEFT', className: expiryClass })
   }
 
   if (showPrice.value) {
-    const text = isFreePrice(node.price)
+    const value = isFreePrice(node.price)
       ? lang === 'zh-CN' ? '无' : 'N/A'
       : formatCurrencyValue(getRemainingValue(node.price, node.billing_cycle, node.expired_at), node.currency)
-    items.push({ icon: 'tabler:coins', text })
+    items.push({ icon: 'tabler:coins', prefix: lang === 'zh-CN' ? '星约余值' : 'PACT VALUE', value })
   }
   return items
 })

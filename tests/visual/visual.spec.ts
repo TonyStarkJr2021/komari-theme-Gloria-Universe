@@ -52,6 +52,23 @@ test('home dark mobile', async ({ page }) => {
   await expect(page).toHaveScreenshot('home-dark-mobile.png', { fullPage: false })
 })
 
+test('header theme button toggles directly between deep-space and starlight', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 })
+  await installKomariFixture(page, { dark: true })
+  await openStablePage(page)
+
+  const html = page.locator('html')
+  await expect(html).toHaveClass(/dark/)
+
+  await page.getByRole('button', { name: '切换到星光模式' }).click()
+  await expect(html).not.toHaveClass(/dark/)
+  await expect(page.getByRole('button', { name: '切换到深空模式' })).toBeVisible()
+
+  await page.getByRole('button', { name: '切换到深空模式' }).click()
+  await expect(html).toHaveClass(/dark/)
+  await expect(page.getByRole('button', { name: '切换到星光模式' })).toBeVisible()
+})
+
 test('starlight mode presents guest as a GLORIA fan', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 900 })
   await installKomariFixture(page)
@@ -188,12 +205,12 @@ test('node card expiry uses red through 5 days and yellow through 10 days', asyn
 
   const criticalCard = page.getByRole('button', { name: '查看节点 主控-洛杉矶 详情' })
   const warningCard = page.getByRole('button', { name: '查看节点 香港边缘节点-超长名称布局测试 详情' })
-  const criticalExpiry = criticalCard.getByText('剩余', { exact: true }).locator('..')
-  const warningExpiry = warningCard.getByText('剩余', { exact: true }).locator('..')
+  const criticalExpiry = criticalCard.getByText('星约余期', { exact: true }).locator('..')
+  const warningExpiry = warningCard.getByText('星约余期', { exact: true }).locator('..')
 
-  await expect(criticalExpiry).toContainText('剩余5天')
+  await expect(criticalExpiry).toContainText('星约余期5天')
   await expect(criticalExpiry).toHaveClass(/text-destructive/)
-  await expect(warningExpiry).toContainText('剩余10天')
+  await expect(warningExpiry).toContainText('星约余期10天')
   await expect(warningExpiry).toHaveClass(/text-warning/)
 })
 
@@ -205,7 +222,7 @@ test('free node pricing stays semantic across home, finance, and detail', async 
   await openStablePage(page)
 
   const nodeCard = page.getByRole('button', { name: `查看节点 ${freeNodeName} 详情` })
-  await expect(nodeCard.getByText('免费', { exact: true })).toBeVisible()
+  await expect(nodeCard.getByText('星光赠礼', { exact: true })).toBeVisible()
   await expect(nodeCard.getByText('无', { exact: true })).toBeVisible()
   await expect(nodeCard.getByText('免费 / 年', { exact: true })).toHaveCount(0)
 

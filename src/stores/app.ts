@@ -1357,14 +1357,9 @@ const useAppStore = defineStore('app', () => {
       return
     }
 
-    const nextMode: Record<ThemeMode, ThemeMode> = {
-      auto: 'light',
-      light: 'dark',
-      dark: 'auto',
-    }
-
-    const currentMode = isValidThemeMode(themeMode.value) ? themeMode.value : 'auto'
-    themeMode.value = nextMode[currentMode]
+    // 顶部按钮只负责星光/深空一键切换；auto 继续作为后台托管的初始策略，
+    // 但不再进入前端按钮的循环，避免点击后外观没有变化的困惑。
+    themeMode.value = resolvedThemeMode.value === 'dark' ? 'light' : 'dark'
   }
 
   function syncAuthState() {

@@ -98,15 +98,15 @@ const homeToolPermissionMap: Record<PrivateHomeToolKey, PermissionKey> = {
 }
 
 const quickControlDefinitions: Record<HomeQuickControlKey, QuickControlOption> = {
-  favorite: { key: 'favorite', label: '收藏', icon: 'tabler:star' },
+  favorite: { key: 'favorite', label: '星辰珍藏', icon: 'tabler:star' },
   monthlyCost: { key: 'monthlyCost', label: '月成本', icon: 'tabler:calendar-dollar' },
-  totalTraffic: { key: 'totalTraffic', label: '总流量', icon: 'tabler:database' },
-  upload: { key: 'upload', label: '上行', icon: 'tabler:chevron-up' },
-  download: { key: 'download', label: '下行', icon: 'tabler:chevron-down' },
-  peak: { key: 'peak', label: '峰值', icon: 'tabler:activity' },
-  offline: { key: 'offline', label: '离线', icon: 'tabler:plug-connected-x' },
-  highLoad: { key: 'highLoad', label: '高负载', icon: 'tabler:alert-triangle' },
-  expiring: { key: 'expiring', label: '即将到期', icon: 'tabler:calendar-exclamation' },
+  totalTraffic: { key: 'totalTraffic', label: '累计能量', icon: 'tabler:database' },
+  upload: { key: 'upload', label: '能量输出', icon: 'tabler:chevron-up' },
+  download: { key: 'download', label: '能量接收', icon: 'tabler:chevron-down' },
+  peak: { key: 'peak', label: '能量峰值', icon: 'tabler:activity' },
+  offline: { key: 'offline', label: '沉睡星辰', icon: 'tabler:plug-connected-x' },
+  highLoad: { key: 'highLoad', label: '过载星辰', icon: 'tabler:alert-triangle' },
+  expiring: { key: 'expiring', label: '星约将尽', icon: 'tabler:calendar-exclamation' },
 }
 
 const homeTools = computed<HomeToolOption[]>(() => {
@@ -131,7 +131,7 @@ watch(searchText, (value) => {
 })
 
 const groups = computed(() => [
-  { tab: '全部节点', name: 'all' },
+  { tab: '全部星辰', name: 'all' },
   ...nodesStore.groups.map(g => ({ tab: g, name: g })),
 ])
 
