@@ -136,6 +136,30 @@ test.describe('README preview', () => {
   })
 })
 
+test('wide desktop keeps the vertical endurance inscription inside the empty left gutter', async ({ page }) => {
+  await page.setViewportSize({ width: 1790, height: 936 })
+  await installKomariFixture(page, { dark: true })
+  await openStablePage(page)
+
+  const inscription = page.locator('.gloria-home-inscription')
+  await expect(inscription).toBeVisible()
+  await expect(inscription.getByText('惟有忍耐到底的', { exact: true })).toBeVisible()
+  await expect(page.locator('.gloria-home-inscription strong')).toHaveCSS('writing-mode', 'vertical-rl')
+  const bounds = await inscription.boundingBox()
+  expect(bounds).not.toBeNull()
+  expect(bounds!.x).toBeGreaterThanOrEqual(47)
+  expect(bounds!.x).toBeLessThanOrEqual(49)
+  expect(bounds!.height).toBeGreaterThan(bounds!.width * 4)
+  await expect(inscription.locator('.gloria-home-inscription__ellipsis i')).toHaveCount(3)
+  const firstStatCardBounds = await page.locator('.gloria-stat-card').first().boundingBox()
+  expect(firstStatCardBounds).not.toBeNull()
+  expect(bounds!.x + bounds!.width).toBeLessThan(firstStatCardBounds!.x)
+  const visitorBounds = await page.locator('.visitor-info-card').boundingBox()
+  if (visitorBounds)
+    expect(bounds!.y + bounds!.height).toBeLessThan(visitorBounds.y)
+  await expect(page).toHaveScreenshot('home-dark-wide-inscription.png', { fullPage: false })
+})
+
 test('authenticated user is presented as the GLORIA navigator', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 900 })
   await installKomariFixture(page, { loggedIn: true })
@@ -191,10 +215,34 @@ test('GLORIA world map highlights node regions and opens wedding-dress easter eg
   await marker.hover()
   await expect(page.locator('[data-country-code="US"].is-active')).toBeVisible()
 
-  await page.locator('.gloria-stage__egg').click()
+  await page.locator('[data-gloria-easter-trigger="wedding"]').click()
   await expect(page.getByText('如果神让你看见', { exact: true })).toBeVisible()
-  await expect(page.locator('.gloria-easter__backdrop')).toBeVisible()
+  await expect(page.locator('.gloria-easter__backdrop')).toHaveAttribute('src', '/images/gloria/iag-2-wedding-original.jpg')
   await expect(page).toHaveScreenshot('gloria-easter-desktop.png', { fullPage: false })
+})
+
+test('Crystal G opens the reflected-light easter egg independently', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 })
+  await installKomariFixture(page, { dark: true })
+  await openStablePage(page)
+
+  await page.locator('[data-gloria-easter-trigger="reflection"]').click()
+  await expect(page.getByText('见过光，就应该把光反射出去', { exact: true })).toBeVisible()
+  await expect(page.getByText('如果神让你看见', { exact: true })).toHaveCount(0)
+  await expect(page.locator('.gloria-easter__backdrop')).toHaveAttribute('src', '/images/gloria/iag-light-reflection-original.png')
+  await expect(page).toHaveScreenshot('gloria-reflection-easter-desktop.png', { fullPage: false })
+})
+
+test('Crystal G reflected-light easter egg remains readable on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await installKomariFixture(page, { dark: true })
+  await openStablePage(page)
+
+  await page.locator('[data-gloria-easter-trigger="reflection"]').click()
+  await expect(page.getByText('见过光，就应该把光反射出去', { exact: true })).toBeVisible()
+  const horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
+  expect(horizontalOverflow).toBeLessThanOrEqual(1)
+  await expect(page).toHaveScreenshot('gloria-reflection-easter-mobile.png', { fullPage: false })
 })
 
 test('licensed audio mappings connect node tracks and region stars', async ({ page }) => {

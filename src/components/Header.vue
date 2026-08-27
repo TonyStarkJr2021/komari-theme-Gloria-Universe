@@ -74,7 +74,9 @@ function handleButtonClick(action: string) {
 }
 
 function revealGloriaEasterEgg(): void {
-  window.dispatchEvent(new CustomEvent('gloria:easter-egg'))
+  window.dispatchEvent(new CustomEvent('gloria:easter-egg', {
+    detail: { variant: 'reflection' },
+  }))
 }
 
 const sitename = computed(() => appStore.publicSettings?.sitename || 'Komari Monitor')
@@ -92,6 +94,7 @@ const sitename = computed(() => appStore.publicSettings?.sitename || 'Komari Mon
       <div class="flex items-center gap-3 cursor-pointer" @click="router.push('/')">
         <button
           type="button"
+          data-gloria-easter-trigger="reflection"
           class="rounded-full"
           title="点击 Crystal G 唤醒彩蛋"
           aria-label="唤醒 GLORIA UNIVERSE 彩蛋"

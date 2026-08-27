@@ -421,6 +421,16 @@ const nodeCardGridClass = computed(() => {
 </script>
 
 <template>
+  <Teleport to="body">
+    <aside v-if="isViewActive" class="gloria-home-inscription" data-home-inscription aria-label="惟有忍耐到底的">
+      <span class="gloria-home-inscription__guide" aria-hidden="true">ENDURE</span>
+      <strong>惟有忍耐到底的</strong>
+      <span class="gloria-home-inscription__ellipsis" aria-hidden="true">
+        <i /><i /><i />
+      </span>
+    </aside>
+  </Teleport>
+
   <div class="home-view" :class="!appStore.disablePageAnimation && 'home-view--motion'">
     <div v-if="appStore.alertEnabled && appStore.alertContent" class="alert px-4">
       <Alert class="border-none bg-background/60 backdrop-blur-xs rounded-md">
@@ -602,6 +612,128 @@ const nodeCardGridClass = computed(() => {
 </template>
 
 <style scoped>
+.gloria-home-inscription {
+  position: fixed;
+  z-index: 2;
+  top: clamp(7.5rem, 14vh, 9rem);
+  left: 3rem;
+  display: none;
+  align-items: center;
+  flex-direction: column;
+  gap: 0.7rem;
+  width: 4rem;
+  color: #fff3c4;
+  filter: drop-shadow(0 0 14px rgb(139 92 246 / 0.34));
+  pointer-events: none;
+  user-select: none;
+  animation: gloria-inscription-breathe 5.8s ease-in-out infinite;
+}
+
+.gloria-home-inscription::before {
+  width: 1px;
+  height: 2rem;
+  background: linear-gradient(transparent, rgb(253 230 138 / 0.72));
+  content: '';
+}
+
+.gloria-home-inscription__guide {
+  color: rgb(125 224 255 / 0.7);
+  font-family: var(--font-display);
+  font-size: 0.48rem;
+  letter-spacing: 0.24em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.gloria-home-inscription strong {
+  background: linear-gradient(180deg, #fffdf0 0%, #fde68a 48%, #d8b4fe 100%);
+  background-clip: text;
+  color: transparent;
+  font-family: STKaiti, KaiTi, FangSong, 'Noto Serif CJK SC', serif;
+  font-size: clamp(1.55rem, 1.7vw, 2.05rem);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-shadow:
+    0 0 18px rgb(253 230 138 / 0.24),
+    0 0 32px rgb(139 92 246 / 0.22);
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+}
+
+.gloria-home-inscription__ellipsis {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 0.38rem;
+  margin-top: -0.1rem;
+  padding: 0.15rem;
+}
+
+.gloria-home-inscription__ellipsis i {
+  display: block;
+  width: 0.3rem;
+  height: 0.3rem;
+  border-radius: 999px;
+  background: #fde68a;
+  box-shadow:
+    0 0 8px rgb(253 230 138 / 0.72),
+    0 0 18px rgb(139 92 246 / 0.34);
+}
+
+.gloria-home-inscription__ellipsis i:nth-child(1) {
+  background: #7dd3fc;
+}
+
+.gloria-home-inscription__ellipsis i:nth-child(3) {
+  background: #d8b4fe;
+}
+
+:root:not(.dark) .gloria-home-inscription {
+  color: #4c1d75;
+  filter: drop-shadow(0 0 14px rgb(255 255 255 / 0.7));
+}
+
+:root:not(.dark) .gloria-home-inscription strong {
+  background: linear-gradient(180deg, #3b1764 0%, #7c3aed 54%, #b45309 100%);
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 1px 16px rgb(255 255 255 / 0.72);
+}
+
+:root:not(.dark) .gloria-home-inscription__guide {
+  color: rgb(7 89 133 / 0.68);
+}
+
+:root:not(.dark) .gloria-home-inscription__ellipsis {
+  filter: drop-shadow(0 1px 5px rgb(255 255 255 / 0.8));
+}
+
+@media (min-width: 1600px) and (min-height: 900px) {
+  .gloria-home-inscription {
+    display: flex;
+  }
+}
+
+@keyframes gloria-inscription-breathe {
+  0%,
+  100% {
+    opacity: 0.76;
+    filter: drop-shadow(0 0 10px rgb(139 92 246 / 0.24));
+  }
+
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 20px rgb(253 230 138 / 0.4));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gloria-home-inscription {
+    animation: none;
+  }
+}
+
 .home-view--motion {
   animation: home-view-enter 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }

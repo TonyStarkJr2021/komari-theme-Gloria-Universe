@@ -7,11 +7,21 @@ import { useAppStore } from '@/stores/app'
 const props = defineProps<{ nodes?: NodeData[] }>()
 const appStore = useAppStore()
 const easterActive = ref(false)
+const easterVariant = ref<'reflection' | 'wedding'>('wedding')
 let easterTimer: ReturnType<typeof setTimeout> | null = null
-const easterSource = computed(() => appStore.gloriaHeroUrl || '/images/gloria/iag-2-wedding-original.jpg')
-const easterType = computed(() => appStore.gloriaHeroUrl ? appStore.gloriaHeroType : 'image')
+const isReflectionEaster = computed(() => easterVariant.value === 'reflection')
+const easterSource = computed(() => isReflectionEaster.value
+  ? '/images/gloria/iag-light-reflection-original.png'
+  : appStore.gloriaHeroUrl || '/images/gloria/iag-2-wedding-original.jpg')
+const easterType = computed(() => isReflectionEaster.value ? 'image' : appStore.gloriaHeroUrl ? appStore.gloriaHeroType : 'image')
+const easterAlt = computed(() => isReflectionEaster.value
+  ? 'G.E.M. 邓紫棋 I AM GLORIA 演唱会水晶舞台光束'
+  : 'G.E.M. 邓紫棋 I AM GLORIA 2.0 婚纱舞台造型')
+const easterMessage = computed(() => isReflectionEaster.value ? '见过光，就应该把光反射出去' : '如果神让你看见')
 
-function revealEasterEgg(): void {
+function revealEasterEgg(event?: Event): void {
+  const detail = event instanceof CustomEvent ? event.detail as { variant?: string } | undefined : undefined
+  easterVariant.value = detail?.variant === 'reflection' ? 'reflection' : 'wedding'
   easterActive.value = false
   requestAnimationFrame(() => easterActive.value = true)
   if (easterTimer)
@@ -30,7 +40,7 @@ onBeforeUnmount(() => {
 <template>
   <section class="gloria-stage" aria-label="GLORIA UNIVERSE 星网节点地图">
     <GloriaWorldMap :nodes="props.nodes" :paused="appStore.stopEarth" />
-    <button type="button" class="gloria-stage__egg" title="点击唤醒 GLORIA UNIVERSE 彩蛋" aria-label="唤醒 GLORIA UNIVERSE 彩蛋" @click="revealEasterEgg">
+    <button type="button" data-gloria-easter-trigger="wedding" class="gloria-stage__egg" title="点击唤醒 GLORIA UNIVERSE 彩蛋" aria-label="唤醒 GLORIA UNIVERSE 彩蛋" @click="revealEasterEgg">
       <span>◇</span><small>WAKE GLORIA</small>
     </button>
 
@@ -38,13 +48,13 @@ onBeforeUnmount(() => {
       <Transition name="gloria-awakening">
         <button v-if="easterActive" type="button" class="gloria-easter" aria-label="关闭 GLORIA UNIVERSE 彩蛋" @click="easterActive = false">
           <video v-if="easterType === 'video'" class="gloria-easter__backdrop" :src="easterSource" poster="/images/gloria/iag-2-wedding-original.jpg" autoplay muted loop playsinline />
-          <img v-else class="gloria-easter__backdrop" :src="easterSource" alt="G.E.M. 邓紫棋 I AM GLORIA 2.0 婚纱舞台造型">
+          <img v-else class="gloria-easter__backdrop" :src="easterSource" :alt="easterAlt">
           <span class="gloria-easter__veil" aria-hidden="true" />
           <span v-for="index in 18" :key="index" class="gloria-easter__star" :style="{ '--star-index': index }" aria-hidden="true">✦</span>
           <span class="gloria-easter__content">
             <span class="gloria-easter__gem" aria-hidden="true">◇</span>
             <small>WELCOME TO GLORIA UNIVERSE</small>
-            <strong>如果神让你看见</strong>
+            <strong :class="{ 'gloria-easter__message--reflection': isReflectionEaster }">{{ easterMessage }}</strong>
             <em>I AM GLORIA</em>
           </span>
         </button>
@@ -208,6 +218,10 @@ onBeforeUnmount(() => {
     0 0 26px rgb(253 230 138 / 0.66),
     0 0 64px rgb(139 92 246 / 0.74);
 }
+.gloria-easter__message--reflection {
+  font-size: clamp(2.2rem, 5.6vw, 4.7rem) !important;
+  letter-spacing: 0.08em !important;
+}
 .gloria-easter__content em {
   margin-top: 0.55rem;
   color: rgb(253 230 138 / 0.86);
@@ -323,6 +337,10 @@ onBeforeUnmount(() => {
   }
   .gloria-easter__content strong {
     letter-spacing: 0.07em;
+  }
+  .gloria-easter__message--reflection {
+    font-size: clamp(2rem, 10vw, 2.7rem) !important;
+    letter-spacing: 0.04em !important;
   }
 }
 @media (prefers-reduced-motion: reduce) {
