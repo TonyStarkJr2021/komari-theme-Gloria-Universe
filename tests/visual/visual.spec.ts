@@ -88,6 +88,16 @@ test('desktop compact cards show complete traffic and pact information', async (
   expect(clippedValues).toEqual([])
 })
 
+test('star list uses GLORIA terminology across every column', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 })
+  await installKomariFixture(page, { dark: true })
+  await openStablePage(page)
+
+  await page.getByRole('button', { name: '列表视图' }).click()
+  for (const label of ['星光', '星系', '星辰', '星籍', '星光持续', '核心', '记忆水晶', '星库', '能量', '光速'])
+    await expect(page.getByText(label, { exact: true }).first()).toBeVisible()
+})
+
 test('header theme button toggles directly between deep-space and starlight', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 })
   await installKomariFixture(page, { dark: true })
@@ -144,7 +154,10 @@ test('wide desktop keeps the vertical endurance inscription inside the empty lef
   const inscription = page.locator('.gloria-home-inscription')
   await expect(inscription).toBeVisible()
   await expect(inscription.getByText('惟有忍耐到底的', { exact: true })).toBeVisible()
+  await expect(inscription.getByText('ENDURE', { exact: true })).toHaveCount(0)
   await expect(page.locator('.gloria-home-inscription strong')).toHaveCSS('writing-mode', 'vertical-rl')
+  await expect(page.locator('.gloria-home-inscription strong')).toHaveCSS('text-shadow', 'none')
+  await expect.poll(() => page.locator('.gloria-home-inscription strong').evaluate(element => getComputedStyle(element).backgroundImage.includes('repeating-linear-gradient'))).toBe(true)
   const bounds = await inscription.boundingBox()
   expect(bounds).not.toBeNull()
   expect(bounds!.x).toBeGreaterThanOrEqual(47)

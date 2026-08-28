@@ -62,16 +62,16 @@ function toggleFavorite(node: NodeData): void {
 const showPrice = computed(() => appStore.privateFeaturesAllowed || !appStore.hidePriceWhenLoggedOut)
 
 const baseColumns: ColumnConfig[] = [
-  { key: 'status', label: '状态', width: '40px', sortable: false },
-  { key: 'os', label: '系统', width: '44px', sortable: false },
-  { key: 'name', label: '节点', width: 'minmax(180px, 0.85fr)', sortable: true },
-  { key: 'metadata', label: '信息', width: 'minmax(240px, 1.1fr)', sortable: false },
-  { key: 'uptime', label: '运行时间', width: '116px', sortable: true },
-  { key: 'cpu', label: 'CPU', width: '100px', sortable: false },
-  { key: 'mem', label: '内存', width: '100px', sortable: false },
-  { key: 'disk', label: '硬盘', width: '100px', sortable: false },
-  { key: 'traffic', label: '流量', width: '104px', sortable: false },
-  { key: 'rate', label: '速率', width: '88px', sortable: true },
+  { key: 'status', label: '星光', width: '40px', sortable: false },
+  { key: 'os', label: '星系', width: '44px', sortable: false },
+  { key: 'name', label: '星辰', width: 'minmax(180px, 0.85fr)', sortable: true },
+  { key: 'metadata', label: '星籍', width: 'minmax(240px, 1.1fr)', sortable: false },
+  { key: 'uptime', label: '星光持续', width: '116px', sortable: true },
+  { key: 'cpu', label: '核心', width: '100px', sortable: false },
+  { key: 'mem', label: '记忆水晶', width: '100px', sortable: false },
+  { key: 'disk', label: '星库', width: '100px', sortable: false },
+  { key: 'traffic', label: '能量', width: '104px', sortable: false },
+  { key: 'rate', label: '光速', width: '88px', sortable: true },
 ]
 
 const columns = computed(() => baseColumns.filter(col => col.key !== 'metadata' || appStore.nodeListMetadataEnabled))

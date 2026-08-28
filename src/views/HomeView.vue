@@ -423,7 +423,6 @@ const nodeCardGridClass = computed(() => {
 <template>
   <Teleport to="body">
     <aside v-if="isViewActive" class="gloria-home-inscription" data-home-inscription aria-label="惟有忍耐到底的">
-      <span class="gloria-home-inscription__guide" aria-hidden="true">ENDURE</span>
       <strong>惟有忍耐到底的</strong>
       <span class="gloria-home-inscription__ellipsis" aria-hidden="true">
         <i /><i /><i />
@@ -613,6 +612,8 @@ const nodeCardGridClass = computed(() => {
 
 <style scoped>
 .gloria-home-inscription {
+  --gloria-inscription-line: rgb(125 211 252 / 0.44);
+  --gloria-inscription-node: rgb(167 139 250 / 0.48);
   position: fixed;
   z-index: 2;
   top: clamp(7.5rem, 14vh, 9rem);
@@ -620,43 +621,32 @@ const nodeCardGridClass = computed(() => {
   display: none;
   align-items: center;
   flex-direction: column;
-  gap: 0.7rem;
-  width: 4rem;
-  color: #fff3c4;
-  filter: drop-shadow(0 0 14px rgb(139 92 246 / 0.34));
+  gap: 0.62rem;
+  width: 3.5rem;
+  color: var(--gloria-inscription-line);
   pointer-events: none;
   user-select: none;
-  animation: gloria-inscription-breathe 5.8s ease-in-out infinite;
-}
-
-.gloria-home-inscription::before {
-  width: 1px;
-  height: 2rem;
-  background: linear-gradient(transparent, rgb(253 230 138 / 0.72));
-  content: '';
-}
-
-.gloria-home-inscription__guide {
-  color: rgb(125 224 255 / 0.7);
-  font-family: var(--font-display);
-  font-size: 0.48rem;
-  letter-spacing: 0.24em;
-  line-height: 1;
-  white-space: nowrap;
+  animation: gloria-inscription-breathe 6.4s ease-in-out infinite;
 }
 
 .gloria-home-inscription strong {
-  background: linear-gradient(180deg, #fffdf0 0%, #fde68a 48%, #d8b4fe 100%);
+  background: repeating-linear-gradient(
+    to bottom,
+    rgb(125 211 252 / 0.62) 0 1px,
+    rgb(167 139 250 / 0.52) 1px 2px,
+    transparent 2px 4px
+  );
   background-clip: text;
   color: transparent;
-  font-family: STKaiti, KaiTi, FangSong, 'Noto Serif CJK SC', serif;
-  font-size: clamp(1.55rem, 1.7vw, 2.05rem);
-  font-weight: 600;
-  letter-spacing: 0.16em;
+  font-family: var(--font-display), 'Microsoft YaHei UI', 'Noto Sans CJK SC', sans-serif;
+  font-size: clamp(1.12rem, 1.18vw, 1.42rem);
+  font-weight: 700;
+  letter-spacing: 0.2em;
   line-height: 1;
-  text-shadow:
-    0 0 18px rgb(253 230 138 / 0.24),
-    0 0 32px rgb(139 92 246 / 0.22);
+  opacity: 0.76;
+  text-shadow: none;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   white-space: nowrap;
   writing-mode: vertical-rl;
 }
@@ -672,41 +662,44 @@ const nodeCardGridClass = computed(() => {
 
 .gloria-home-inscription__ellipsis i {
   display: block;
-  width: 0.3rem;
-  height: 0.3rem;
+  width: 0.2rem;
+  height: 0.2rem;
   border-radius: 999px;
-  background: #fde68a;
-  box-shadow:
-    0 0 8px rgb(253 230 138 / 0.72),
-    0 0 18px rgb(139 92 246 / 0.34);
+  background: var(--gloria-inscription-node);
+  box-shadow: none;
 }
 
 .gloria-home-inscription__ellipsis i:nth-child(1) {
-  background: #7dd3fc;
+  background: rgb(125 211 252 / 0.56);
 }
 
 .gloria-home-inscription__ellipsis i:nth-child(3) {
-  background: #d8b4fe;
+  background: rgb(216 180 254 / 0.5);
 }
 
 :root:not(.dark) .gloria-home-inscription {
-  color: #4c1d75;
-  filter: drop-shadow(0 0 14px rgb(255 255 255 / 0.7));
+  --gloria-inscription-line: rgb(37 99 235 / 0.58);
+  --gloria-inscription-node: rgb(109 40 217 / 0.6);
+  color: var(--gloria-inscription-line);
 }
 
 :root:not(.dark) .gloria-home-inscription strong {
-  background: linear-gradient(180deg, #3b1764 0%, #7c3aed 54%, #b45309 100%);
+  background: repeating-linear-gradient(
+    to bottom,
+    rgb(23 37 84 / 0.96) 0 1px,
+    rgb(91 33 182 / 0.9) 1px 2px,
+    transparent 2px 4px
+  );
   background-clip: text;
   color: transparent;
-  text-shadow: 0 1px 16px rgb(255 255 255 / 0.72);
-}
-
-:root:not(.dark) .gloria-home-inscription__guide {
-  color: rgb(7 89 133 / 0.68);
+  opacity: 0.96;
+  text-shadow: none;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 :root:not(.dark) .gloria-home-inscription__ellipsis {
-  filter: drop-shadow(0 1px 5px rgb(255 255 255 / 0.8));
+  filter: none;
 }
 
 @media (min-width: 1600px) and (min-height: 900px) {
@@ -718,13 +711,11 @@ const nodeCardGridClass = computed(() => {
 @keyframes gloria-inscription-breathe {
   0%,
   100% {
-    opacity: 0.76;
-    filter: drop-shadow(0 0 10px rgb(139 92 246 / 0.24));
+    opacity: 0.7;
   }
 
   50% {
-    opacity: 1;
-    filter: drop-shadow(0 0 20px rgb(253 230 138 / 0.4));
+    opacity: 0.88;
   }
 }
 
