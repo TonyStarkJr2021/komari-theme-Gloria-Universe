@@ -85,6 +85,7 @@ const searchText = ref('')
 const debouncedSearchText = ref('')
 const activeHomeTool = ref<HomeToolKey>('nodes')
 const activeQuickControl = ref<HomeQuickControlKey | null>(null)
+const groupScrollElement = ref<HTMLElement | null>(null)
 const exchangeRates = ref(financeHelper.DEFAULT_EXCHANGE_RATES)
 const excludeFreeNodes = ref(true)
 const pingDialogNode = ref<NodeData | null>(null)
@@ -327,6 +328,19 @@ function setQuickControl(key: HomeQuickControlKey) {
   })
 }
 
+function handleGroupWheel(event: WheelEvent): void {
+  const element = groupScrollElement.value
+  if (!element || element.scrollWidth <= element.clientWidth)
+    return
+
+  const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY
+  if (!delta)
+    return
+
+  event.preventDefault()
+  element.scrollBy({ left: delta, behavior: 'smooth' })
+}
+
 function setNodeViewMode(mode: 'card' | 'list') {
   if (appStore.nodeViewMode === mode)
     return
@@ -453,37 +467,43 @@ const nodeCardGridClass = computed(() => {
       <div class="nodes min-w-0">
         <Tabs v-model="appStore.nodeSelectedGroup" class="w-full flex-col gap-4">
           <div class="flex flex-col gap-2 xl:flex-row xl:items-center">
-            <div class="home-controls-scroll min-w-0 overflow-x-auto overscroll-x-contain rounded-sm pointer-events-auto touch-pan-x">
-              <div class="flex w-max gap-2">
+            <div class="home-controls-scroll flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain rounded-sm pointer-events-auto touch-pan-x xl:flex-1 xl:overflow-visible">
+              <div
+                ref="groupScrollElement"
+                class="home-groups-scroll flex-none overflow-x-auto overscroll-x-contain xl:min-w-0 xl:flex-1"
+                title="星辰分组过多时，可使用鼠标滚轮横向查看"
+                @wheel="handleGroupWheel"
+              >
                 <TabsList class="w-max h-8 bg-background/50 backdrop-blur-xl rounded-md pointer-events-auto">
                   <TabsTrigger
                     v-for="g in groups" :key="g.name" :value="g.name"
-                    class="h-6.5 flex-none shrink-0 text-xs border-none data-[state=active]:text-selection shadow-none rounded-sm"
+                    class="h-6.5 flex-none shrink-0 rounded-sm border-none px-1.5 text-xs shadow-none data-[state=active]:text-selection"
                   >
                     {{ g.tab }}
                   </TabsTrigger>
                 </TabsList>
+              </div>
 
-                <div
-                  v-if="showQuickControls && activeHomeTool === 'nodes'"
-                  class="flex h-8 w-max items-center gap-1 rounded-md bg-background/50 px-1 backdrop-blur-xl pointer-events-auto"
+              <div
+                v-if="showQuickControls && activeHomeTool === 'nodes'"
+                class="home-quick-controls flex h-8 w-max flex-none items-center gap-1 rounded-md bg-background/50 px-1 backdrop-blur-xl pointer-events-auto"
+              >
+                <button
+                  v-for="control in quickControls" :key="control.key"
+                  type="button"
+                  class="home-quick-control inline-flex h-6.5 flex-none shrink-0 items-center gap-1 rounded-sm px-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                  :class="activeQuickControl === control.key ? 'is-active bg-background text-selection shadow-sm' : ''"
+                  :aria-pressed="activeQuickControl === control.key"
+                  :aria-label="`切换到${control.label}节点，${quickControlCounts[control.key] ?? 0} 台`"
+                  :title="`${control.label} · ${quickControlCounts[control.key] ?? 0}`"
+                  @click="setQuickControl(control.key)"
                 >
-                  <button
-                    v-for="control in quickControls" :key="control.key"
-                    type="button"
-                    class="inline-flex h-6.5 flex-none shrink-0 items-center gap-1 rounded-sm px-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
-                    :class="activeQuickControl === control.key ? 'bg-background text-selection shadow-sm' : ''"
-                    :aria-pressed="activeQuickControl === control.key"
-                    :aria-label="`切换到${control.label}节点，${quickControlCounts[control.key] ?? 0} 台`"
-                    @click="setQuickControl(control.key)"
-                  >
-                    <Icon :icon="control.icon" :width="12" :height="12" />
-                    <span>{{ control.label }}</span>
-                    <span class="rounded-full bg-slate-500/10 px-1 text-[10px] tabular-nums text-foreground/65">
-                      {{ quickControlCounts[control.key] ?? 0 }}
-                    </span>
-                  </button>
-                </div>
+                  <Icon :icon="control.icon" :width="12" :height="12" />
+                  <span class="home-quick-control__label">{{ control.label }}</span>
+                  <span class="rounded-full bg-slate-500/10 px-1 text-[10px] tabular-nums text-foreground/65">
+                    {{ quickControlCounts[control.key] ?? 0 }}
+                  </span>
+                </button>
               </div>
             </div>
             <div class="search flex min-w-0 flex-wrap gap-2 items-center justify-end pointer-events-auto max-sm:justify-start xl:ml-auto">
@@ -743,6 +763,14 @@ const nodeCardGridClass = computed(() => {
 
 .home-controls-scroll {
   scrollbar-width: none;
+}
+
+.home-groups-scroll {
+  scrollbar-width: none;
+}
+
+.home-groups-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 .home-controls-scroll::-webkit-scrollbar {

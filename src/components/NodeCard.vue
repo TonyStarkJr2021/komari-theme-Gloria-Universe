@@ -109,6 +109,7 @@ const {
   lossDisplay,
   latencyPanelTooltip,
   lossPanelTooltip,
+  taskSummaries,
 } = useNodePingDisplay(() => props.node.uuid, { enabled: () => props.pingEnabled })
 
 const trafficUsedPercentage = computed(() => getTrafficUsedPercentage(props.node))
@@ -491,7 +492,138 @@ function hasRegion(region: string | null | undefined): boolean {
         </div>
 
         <!-- 延迟 + 丢包 -->
-        <div class="grid grid-cols-2 gap-1.5">
+        <div
+          v-if="taskSummaries.length > 1"
+          class="node-ping-task-table min-w-0 overflow-hidden rounded-lg bg-slate-500/5 p-1.5"
+          :class="!props.node.online ? 'blur-xs opacity-50' : ''"
+          aria-label="分目标光速延迟与信号损失"
+        >
+          <div class="node-ping-task-grid mb-1 px-1 text-[9px] leading-none text-muted-foreground/75">
+            <span>探测目标</span>
+            <span class="text-center">光速延迟</span>
+            <span class="text-center">信号损失</span>
+          </div>
+          <button
+            v-for="task in taskSummaries"
+            :key="task.id"
+            :data-node-ping-task-row="task.id"
+            type="button"
+            class="node-ping-task-grid w-full items-center rounded-md px-1 py-1 text-left transition-colors hover:bg-slate-500/8"
+            :title="`${task.name}\n平均光速延迟 ${Math.round(task.avgLatency)} ms\n平均信号损失 ${task.avgLoss.toFixed(1)}%`"
+            :aria-label="`${task.name}，光速延迟 ${Math.round(task.avgLatency)} 毫秒，信号损失 ${task.avgLoss.toFixed(1)}%`"
+            @click.stop="emit('pingClick')"
+          >
+            <span class="break-words pr-1 text-[10px] font-medium leading-tight text-muted-foreground">{{ task.name }}</span>
+            <span class="group/panel flex min-w-0 flex-col gap-1 px-1">
+              <span class="text-center text-[10px] font-medium leading-none tabular-nums">{{ task.latencyDisplay }}</span>
+              <span
+                data-node-ping-bars="latency"
+                class="grid h-2 min-w-0 w-full items-end gap-[1px] opacity-85 group-hover/panel:opacity-100"
+                :style="{ gridTemplateColumns: `repeat(${task.latencyBars.length}, minmax(0, 1fr))` }"
+              >
+                <DataTooltip
+                  v-for="bar in task.latencyBars" :key="bar.key"
+                  placement="top" :content="bar.tooltip" class="h-full w-full"
+                >
+                  <span
+                    class="block h-full w-full rounded-[1px] transition-transform duration-150 group-hover/data-tooltip:scale-y-140 group-hover/panel:opacity-60 group-hover/data-tooltip:!opacity-100"
+                    :class="bar.className"
+                  />
+                </DataTooltip>
+              </span>
+            </span>
+
+            <span class="group/panel flex min-w-0 flex-col gap-1 px-1">
+              <span class="text-center text-[10px] font-medium leading-none tabular-nums">{{ task.lossDisplay }}</span>
+              <span
+                data-node-ping-bars="loss"
+                class="grid h-2 min-w-0 w-full items-end gap-[1px] opacity-85 group-hover/panel:opacity-100"
+                :style="{ gridTemplateColumns: `repeat(${task.lossBars.length}, minmax(0, 1fr))` }"
+              >
+                <DataTooltip
+                  v-for="bar in task.lossBars" :key="bar.key"
+                  placement="top" :content="bar.tooltip" class="h-full w-full"
+                >
+                  <span
+                    class="block h-full w-full rounded-[1px] transition-transform duration-150 group-hover/data-tooltip:scale-y-140 group-hover/panel:opacity-60 group-hover/data-tooltip:!opacity-100"
+                    :class="bar.className"
+                  />
+                </DataTooltip>
+              </span>
+            </span>
+          </button>
+        </div>
+
+        <div
+          v-else-if="taskSummaries.length === 1"
+          :data-node-ping-task-row="taskSummaries[0]?.id"
+          class="min-w-0"
+        >
+          <div class="mb-1 truncate px-1 text-[10px] font-medium leading-none text-muted-foreground">
+            {{ taskSummaries[0]?.name }}
+          </div>
+          <div class="grid grid-cols-2 gap-1.5">
+            <button
+              type="button"
+              class="group/panel relative flex flex-col rounded-lg bg-slate-500/5"
+              :class="[nodeCardPingPanelClass, nodeCardPanelClass, !props.node.online ? 'blur-xs opacity-50' : '']"
+              :title="taskSummaries[0]?.hasData ? `${taskSummaries[0].name}\n平均光速延迟 ${Math.round(taskSummaries[0].avgLatency)} ms` : `${taskSummaries[0]?.name}\n暂无采样数据`"
+              :aria-label="`${taskSummaries[0]?.name}，光速延迟 ${taskSummaries[0]?.latencyDisplay}`"
+              @click.stop="emit('pingClick')"
+            >
+              <div class="flex items-center justify-between text-[11px] leading-none">
+                <span class="text-muted-foreground">光速延迟</span>
+                <span class="font-medium">{{ taskSummaries[0]?.latencyDisplay }}</span>
+              </div>
+              <div
+                data-node-ping-bars="latency"
+                class="grid min-h-0 min-w-0 w-full flex-1 items-end gap-[1px] opacity-80 group-hover/panel:opacity-100"
+                :style="{ gridTemplateColumns: `repeat(${taskSummaries[0]?.latencyBars.length ?? 0}, minmax(0, 1fr))` }"
+              >
+                <DataTooltip
+                  v-for="bar in taskSummaries[0]?.latencyBars ?? []" :key="bar.key"
+                  placement="top" :content="bar.tooltip" class="h-full w-full"
+                >
+                  <span
+                    class="block h-full w-full rounded-[1px] transition-transform duration-150 group-hover/data-tooltip:scale-y-160 group-hover/panel:opacity-60 group-hover/data-tooltip:!opacity-100"
+                    :class="bar.className"
+                  />
+                </DataTooltip>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              class="group/panel relative flex flex-col rounded-lg bg-slate-500/5"
+              :class="[nodeCardPingPanelClass, nodeCardPanelClass, !props.node.online ? 'blur-xs opacity-50' : '']"
+              :title="taskSummaries[0]?.hasData ? `${taskSummaries[0].name}\n平均信号损失 ${taskSummaries[0].avgLoss.toFixed(1)}%` : `${taskSummaries[0]?.name}\n暂无采样数据`"
+              :aria-label="`${taskSummaries[0]?.name}，信号损失 ${taskSummaries[0]?.lossDisplay}`"
+              @click.stop="emit('pingClick')"
+            >
+              <div class="flex items-center justify-between text-[11px] leading-none">
+                <span class="text-muted-foreground">信号损失</span>
+                <span class="font-medium">{{ taskSummaries[0]?.lossDisplay }}</span>
+              </div>
+              <div
+                data-node-ping-bars="loss"
+                class="grid min-h-0 min-w-0 w-full flex-1 items-end gap-[1px] opacity-80 group-hover/panel:opacity-100"
+                :style="{ gridTemplateColumns: `repeat(${taskSummaries[0]?.lossBars.length ?? 0}, minmax(0, 1fr))` }"
+              >
+                <DataTooltip
+                  v-for="bar in taskSummaries[0]?.lossBars ?? []" :key="bar.key"
+                  placement="top" :content="bar.tooltip" class="h-full w-full"
+                >
+                  <span
+                    class="block h-full w-full rounded-[1px] transition-transform duration-150 group-hover/data-tooltip:scale-y-160 group-hover/panel:opacity-60 group-hover/data-tooltip:!opacity-100"
+                    :class="bar.className"
+                  />
+                </DataTooltip>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div v-else class="grid grid-cols-2 gap-1.5">
           <button
             type="button"
             class="group/panel relative flex flex-col rounded-lg bg-slate-500/5"
@@ -623,6 +755,11 @@ function hasRegion(region: string | null | undefined): boolean {
   border-color: rgb(155 92 255 / 0.34) !important;
   background: linear-gradient(90deg, rgb(155 92 255 / 0.1), rgb(255 122 200 / 0.08));
   color: #d8c9ff !important;
+}
+
+.node-ping-task-grid {
+  display: grid;
+  grid-template-columns: minmax(3rem, 0.62fr) minmax(0, 1fr) minmax(0, 1fr);
 }
 
 @keyframes gloria-node-pulse {

@@ -52,6 +52,25 @@ test('home dark mobile', async ({ page }) => {
   await expect(page).toHaveScreenshot('home-dark-mobile.png', { fullPage: false })
 })
 
+test('mobile overview keeps energy transmission and reception together on the last row', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await installKomariFixture(page, {
+    dark: true,
+    generalCardKeys: ['memory', 'remainingValue', 'uploadSpeed', 'disk', 'totalTraffic', 'downloadSpeed'],
+  })
+  await openStablePage(page)
+
+  const orderedKeys = await page.locator('[data-general-card-key]').evaluateAll(elements => elements
+    .map(element => ({
+      key: element.getAttribute('data-general-card-key'),
+      top: element.getBoundingClientRect().top,
+      left: element.getBoundingClientRect().left,
+    }))
+    .sort((left, right) => left.top - right.top || left.left - right.left)
+    .map(item => item.key))
+  expect(orderedKeys).toEqual(['memory', 'remainingValue', 'disk', 'totalTraffic', 'uploadSpeed', 'downloadSpeed'])
+})
+
 test('mobile footer credits stay on one line', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await installKomariFixture(page, { dark: true, visitorInfoEnabled: false })
@@ -86,6 +105,94 @@ test('desktop compact cards show complete traffic and pact information', async (
     .map(element => ({ text: element.textContent?.trim(), overflow: element.scrollWidth - element.clientWidth }))
     .filter(item => item.overflow > 1))
   expect(clippedValues).toEqual([])
+})
+
+test('desktop quick controls keep the final item fully visible', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 })
+  await installKomariFixture(page, { dark: true })
+  await openStablePage(page)
+
+  const expiringControl = page.getByRole('button', { name: /切换到星约将尽节点/ })
+  await expect(expiringControl).toBeVisible()
+  await expect(expiringControl.locator('.home-quick-control__label')).toHaveText('星约将尽')
+  const isFullyVisible = await expiringControl.evaluate((element) => {
+    const button = element.getBoundingClientRect()
+    const controls = element.closest('.home-quick-controls')?.getBoundingClientRect()
+    return Boolean(controls) && button.left >= controls!.left && button.right <= controls!.right
+  })
+  expect(isFullyVisible).toBe(true)
+})
+
+test('desktop star groups accept the mouse wheel as horizontal navigation', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 })
+  await installKomariFixture(page, { dark: true })
+  await openStablePage(page)
+
+  const groups = page.locator('.home-groups-scroll')
+  await groups.evaluate((element) => {
+    const htmlElement = element as HTMLElement
+    htmlElement.style.flex = '0 0 320px'
+    htmlElement.style.width = '320px'
+    htmlElement.style.maxWidth = '320px'
+    htmlElement.style.overflowX = 'scroll'
+    const overflowProbe = document.createElement('span')
+    overflowProbe.style.display = 'block'
+    overflowProbe.style.width = '1200px'
+    overflowProbe.style.height = '1px'
+    htmlElement.append(overflowProbe)
+  })
+  const canScroll = await groups.evaluate(element => element.scrollWidth > element.clientWidth)
+  expect(canScroll).toBe(true)
+  await groups.evaluate((element) => {
+    element.dispatchEvent(new WheelEvent('wheel', { deltaY: 800, bubbles: true, cancelable: true }))
+  })
+  await expect.poll(() => groups.evaluate(element => element.scrollLeft)).toBeGreaterThan(0)
+})
+
+test('node cards keep each ping target latency and loss separate', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 })
+  await installKomariFixture(page, { dark: true, pingTaskOrdering: true })
+  await openStablePage(page)
+
+  const card = page.getByRole('button', { name: '查看节点 主控-洛杉矶 详情' })
+  const taskRows = card.locator('[data-node-ping-task-row]')
+  await expect(taskRows).toHaveCount(3)
+  await expect(taskRows).toContainText(['浙江移动', '浙江联通', '浙江电信'])
+  await expect(card.getByText('光速延迟', { exact: true })).toBeVisible()
+  await expect(card.getByText('信号损失', { exact: true })).toBeVisible()
+  for (let index = 0; index < 3; index++) {
+    await expect(taskRows.nth(index)).toBeVisible()
+    await expect(taskRows.nth(index).locator('[data-node-ping-bars="latency"]')).toBeVisible()
+    await expect(taskRows.nth(index).locator('[data-node-ping-bars="loss"]')).toBeVisible()
+  }
+})
+
+test('node cards show the backend name even when only one ping target is configured', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 })
+  await installKomariFixture(page, { dark: true })
+  await openStablePage(page)
+
+  const card = page.getByRole('button', { name: '查看节点 主控-洛杉矶 详情' })
+  const taskRows = card.locator('[data-node-ping-task-row]')
+  await expect(taskRows).toHaveCount(1)
+  await expect(taskRows.first()).toContainText('Tokyo')
+  await expect(taskRows.first().getByText('光速延迟', { exact: true })).toBeVisible()
+  await expect(taskRows.first().getByText('信号损失', { exact: true })).toBeVisible()
+  await expect(taskRows.first().locator('[data-node-ping-bars="latency"]')).toBeVisible()
+  await expect(taskRows.first().locator('[data-node-ping-bars="loss"]')).toBeVisible()
+})
+
+test('node cards hide global ping targets that are not assigned to the node', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 })
+  await installKomariFixture(page, { dark: true, pingTaskOrdering: true, pingTaskSparseNode: true })
+  await openStablePage(page)
+
+  const card = page.getByRole('button', { name: '查看节点 主控-洛杉矶 详情' })
+  const taskRows = card.locator('[data-node-ping-task-row]')
+  await expect(taskRows).toHaveCount(1)
+  await expect(taskRows.first()).toContainText('浙江联通')
+  await expect(taskRows.first()).not.toContainText('浙江移动')
+  await expect(taskRows.first()).not.toContainText('浙江电信')
 })
 
 test('star list uses GLORIA terminology across every column', async ({ page }) => {

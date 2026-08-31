@@ -1,11 +1,11 @@
 import type { MaybeRefOrGetter } from 'vue'
-import type { PingMetricTaskStats } from '@/utils/rpc'
+import type { PingMetricTaskStats, PingTaskInfo } from '@/utils/rpc'
 import { useThrottleFn } from '@vueuse/core'
 import { computed, onScopeDispose, ref, shallowRef, toValue, watch } from 'vue'
 import { PING_RECORD_MAX_COUNT } from '@/constants/load'
-import { abortPingRecords, loadPingRecords } from '@/services/history.service'
-import { abortPingMetricStats, abortQueryMetrics, loadPingMetricStats, queryMetrics } from '@/services/metrics.service'
-import { isPingMetric, normalizeMetricSeriesList, PING_LATENCY_METRIC, PING_LOSS_METRIC, pingTaskId } from '@/utils/metricSeries'
+import { abortPingRecords, loadPingRecordsWithTasks } from '@/services/history.service'
+import { abortPingMetricStats, abortQueryMetrics, loadPingMetricStats, loadPublicPingTasks, queryMetrics } from '@/services/metrics.service'
+import { isPingMetric, normalizeMetricSeriesList, PING_LATENCY_METRIC, PING_LOSS_METRIC, pingTaskId, pingTaskName } from '@/utils/metricSeries'
 
 export interface NodePingHistoryPoint {
   time: string
@@ -13,11 +13,21 @@ export interface NodePingHistoryPoint {
   loss: number | null
 }
 
+export interface NodePingTaskSummary {
+  id: string
+  name: string
+  avgLatency: number
+  avgLoss: number
+  history: NodePingHistoryPoint[]
+  hasData: boolean
+}
+
 export interface NodePingStatsState {
   avgLatency: number
   avgLoss: number
   avgVolatility: number
   history: NodePingHistoryPoint[]
+  tasks: NodePingTaskSummary[]
   hasData: boolean
 }
 
@@ -29,6 +39,7 @@ interface PingRecord {
 }
 
 interface MetricLossPoint {
+  taskId: number
   time: string
   value: number
   count: number
@@ -45,6 +56,7 @@ interface SharedPingRecordsState {
   source: 'metric' | 'legacy'
   metricStats?: PingMetricTaskStats[]
   metricLossPoints?: MetricLossPoint[]
+  pingTasks?: PingTaskInfo[]
 }
 
 interface SharedPingRecordsEntry {
@@ -58,7 +70,7 @@ interface SharedPingRecordsEntry {
 }
 
 const HISTORY_BUCKET_COUNT = 20
-const CACHE_VERSION = 8
+const CACHE_VERSION = 10
 const CACHE_KEY_PREFIX = 'komari-theme-emerald:node-ping-stats'
 const FULL_LOSS_EPSILON = 1e-6
 const PING_RECORD_REFRESH_INTERVAL_MS = 60_000
@@ -75,6 +87,7 @@ function createEmptyStats(): NodePingStatsState {
     avgLoss: 0,
     avgVolatility: 0,
     history: [],
+    tasks: [],
     hasData: false,
   }
 }
@@ -155,6 +168,7 @@ function isValidStatsState(value: unknown): value is NodePingStatsState {
     && typeof state.hasData === 'boolean'
     && Array.isArray(state.history)
     && state.history.every(isValidHistoryPoint)
+    && Array.isArray(state.tasks)
 }
 
 function readStatsCache(uuid: string, hours: number, maxCount?: number): NodePingStatsState | null {
@@ -271,7 +285,7 @@ function buildMetricRecordsByClient(nodeUuid: string, stats: PingMetricTaskStats
 }
 
 async function loadPingMetricRecords(nodeUuid: string, hours: number, maxCount?: number): Promise<SharedPingRecordsState | null> {
-  const [statsResult, metricsResult] = await Promise.allSettled([
+  const [statsResult, metricsResult, tasksResult] = await Promise.allSettled([
     loadPingMetricStats({ entity_id: nodeUuid, hours, max_points: maxCount }),
     queryMetrics({
       metric_keys: [PING_LATENCY_METRIC, PING_LOSS_METRIC],
@@ -282,6 +296,7 @@ async function loadPingMetricRecords(nodeUuid: string, hours: number, maxCount?:
       max_points: maxCount,
       aggregation: 'avg',
     }),
+    loadPublicPingTasks(),
   ])
 
   const stats = statsResult.status === 'fulfilled'
@@ -304,6 +319,7 @@ async function loadPingMetricRecords(nodeUuid: string, hours: number, maxCount?:
             continue
 
           metricLossPoints.push({
+            taskId,
             time: point.time,
             value: point.value,
             count: isFiniteNumber(point.count) && point.count > 0 ? point.count : 1,
@@ -346,6 +362,7 @@ async function loadPingMetricRecords(nodeUuid: string, hours: number, maxCount?:
     source: 'metric',
     metricStats: stats,
     metricLossPoints,
+    pingTasks: tasksResult.status === 'fulfilled' ? tasksResult.value : [],
   }
 }
 
@@ -366,10 +383,11 @@ async function loadSharedPingRecords(entry: SharedPingRecordsEntry, hours: numbe
         entry.data.value = metricState
       }
       else {
-        const records = await loadPingRecords(hours, maxCount, nodeUuid)
+        const payload = await loadPingRecordsWithTasks(hours, maxCount, nodeUuid)
         entry.data.value = {
-          recordsByClient: buildRecordsByClient(records),
+          recordsByClient: buildRecordsByClient(payload.records),
           source: 'legacy',
+          pingTasks: payload.tasks,
         }
       }
       entry.lastFetchedAt = Date.now()
@@ -542,7 +560,7 @@ function getPercentile(values: number[], percentile: number): number | null {
   return lowerValue + (upperValue - lowerValue) * (position - lowerIndex)
 }
 
-function buildStats(records: PingRecord[], metricStats?: PingMetricTaskStats[], metricLossPoints?: MetricLossPoint[]): NodePingStatsState {
+function buildStats(records: PingRecord[], metricStats?: PingMetricTaskStats[], metricLossPoints?: MetricLossPoint[], pingTasks?: PingTaskInfo[]): NodePingStatsState {
   const statsWithSamples = (metricStats ?? []).filter(stat => stat.total > 0)
   if (statsWithSamples.length) {
     const history = buildPingHistory(records.filter(record => record.value >= 0), metricLossPoints)
@@ -561,12 +579,31 @@ function buildStats(records: PingRecord[], metricStats?: PingMetricTaskStats[], 
       .map(stat => ({ value: stat.p99_p50_ratio!, weight: stat.valid }))
 
     const avgLoss = weightedAverage(lossValues)
+    const taskOrder = new Map((pingTasks ?? []).map((task, index) => [String(task.id), index]))
+    const tasks = statsWithSamples.map((stat): NodePingTaskSummary => {
+      const taskId = normalizeTaskId(stat.task_id)
+      const latency = isFiniteNumber(stat.avg)
+        ? stat.avg
+        : isFiniteNumber(stat.latest) ? stat.latest : 0
+      return {
+        id: stat.task_id,
+        name: pingTaskName(stat) || `探测目标 ${stat.task_id}`,
+        avgLatency: latency,
+        avgLoss: !stat.loss_approximate && isFiniteNumber(stat.loss) ? stat.loss : 0,
+        history: buildPingHistory(
+          records.filter(record => record.task_id === taskId && record.value >= 0),
+          metricLossPoints?.filter(point => point.taskId === taskId),
+        ),
+        hasData: stat.valid > 0 || (!stat.loss_approximate && isFiniteNumber(stat.loss)),
+      }
+    }).sort((left, right) => (taskOrder.get(left.id) ?? Number.MAX_SAFE_INTEGER) - (taskOrder.get(right.id) ?? Number.MAX_SAFE_INTEGER))
 
     return {
       avgLatency: latencyValues.length ? weightedAverage(latencyValues) : average(latestLatencyValues),
       avgLoss,
       avgVolatility: weightedAverage(volatilityValues),
       history,
+      tasks,
       hasData: true,
     }
   }
@@ -589,13 +626,24 @@ function buildStats(records: PingRecord[], metricStats?: PingMetricTaskStats[], 
   const latencyValues: number[] = []
   const taskLossValues: number[] = []
   const volatilityValues: number[] = []
+  const tasks: NodePingTaskSummary[] = []
+  const taskNames = new Map((pingTasks ?? []).map(task => [task.id, task.name]))
 
-  for (const recordsByTask of taskRecords.values()) {
+  for (const [taskId, recordsByTask] of taskRecords) {
     const validValues = recordsByTask
       .map(record => record.value)
       .filter(value => value >= 0)
 
-    taskLossValues.push((recordsByTask.length - validValues.length) / recordsByTask.length * 100)
+    const taskLoss = (recordsByTask.length - validValues.length) / recordsByTask.length * 100
+    taskLossValues.push(taskLoss)
+    tasks.push({
+      id: String(taskId),
+      name: taskNames.get(taskId)?.trim() || `探测目标 ${taskId}`,
+      avgLatency: average(validValues),
+      avgLoss: taskLoss,
+      history: buildPingHistory(recordsByTask),
+      hasData: recordsByTask.length > 0,
+    })
 
     if (!validValues.length)
       continue
@@ -628,6 +676,7 @@ function buildStats(records: PingRecord[], metricStats?: PingMetricTaskStats[], 
     avgLoss,
     avgVolatility,
     history,
+    tasks,
     hasData,
   }
 }
@@ -693,7 +742,7 @@ export function useNodePingStats(
 
     const records = state.recordsByClient.get(nodeUuid) ?? []
     return records.length || state.metricStats?.length
-      ? buildStats(records, state.metricStats, state.metricLossPoints)
+      ? buildStats(records, state.metricStats, state.metricLossPoints, state.pingTasks)
       : createEmptyStats()
   })
 
@@ -770,6 +819,7 @@ export function useNodePingStats(
     avgLatency: computed(() => stats.value.avgLatency),
     avgLoss: computed(() => stats.value.avgLoss),
     avgVolatility: computed(() => stats.value.avgVolatility),
+    tasks: computed(() => stats.value.tasks),
     hasData: computed(() => stats.value.hasData),
   }
 }

@@ -27,6 +27,7 @@ export interface VisualFixtureOptions {
   expiryThresholds?: boolean
   missingCpuMetricHistory?: boolean
   pingTaskOrdering?: boolean
+  pingTaskSparseNode?: boolean
   generalCardKeys?: string[]
   audioPreview?: boolean
   visitorInfoEnabled?: boolean
@@ -301,7 +302,7 @@ async function handleRpc(route: Route, clientFixtures = clients, options: Visual
             start: FIXED_NOW,
             end: FIXED_NOW,
             interval_seconds: 60,
-            stats: metricPingTasks.map(task => ({
+            stats: (options.pingTaskSparseNode ? [pingTasks[1]!] : metricPingTasks).map(task => ({
               entity_id: uuid,
               task_id: String(task.id),
               name: task.name,
@@ -316,7 +317,7 @@ async function handleRpc(route: Route, clientFixtures = clients, options: Visual
               avg: 80 + task.id,
               latest: 90 + task.id,
             })),
-            count: metricPingTasks.length,
+            count: options.pingTaskSparseNode ? 1 : metricPingTasks.length,
           }
         : { start: FIXED_NOW, end: FIXED_NOW, interval_seconds: 60, stats: [], count: 0 }
       break

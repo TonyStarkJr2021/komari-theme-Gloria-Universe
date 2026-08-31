@@ -74,8 +74,7 @@ export function useNodePingDisplay(
     maxCount: PING_SUMMARY_MAX_COUNT,
   })
 
-  function buildPingBars(metric: NodePingMetric): NodePingBar[] {
-    const points = pingStats.history.value
+  function buildPingBars(metric: NodePingMetric, points = pingStats.history.value): NodePingBar[] {
     if (!points.length)
       return []
 
@@ -159,6 +158,20 @@ export function useNodePingDisplay(
     return `平均丢包 ${pingStats.avgLoss.value.toFixed(1)}%${volatility}`
   })
 
+  const taskSummaries = computed(() => pingStats.tasks.value
+    .filter(task => task.hasData)
+    .map(task => ({
+      ...task,
+      latencyDisplay: task.hasData ? `${Math.round(task.avgLatency)} ms` : '-',
+      lossDisplay: task.hasData ? `${task.avgLoss.toFixed(1)}%` : '-',
+      latencyBars: buildPingBars('latency', task.history).length
+        ? buildPingBars('latency', task.history)
+        : buildEmptyPingBars('latency'),
+      lossBars: buildPingBars('loss', task.history).length
+        ? buildPingBars('loss', task.history)
+        : buildEmptyPingBars('loss'),
+    })))
+
   return {
     pingStats,
     pingStatsEnabled,
@@ -169,5 +182,6 @@ export function useNodePingDisplay(
     lossDisplay,
     latencyPanelTooltip,
     lossPanelTooltip,
+    taskSummaries,
   }
 }
