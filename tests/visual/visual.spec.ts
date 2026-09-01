@@ -245,7 +245,7 @@ test.describe('README preview', () => {
   test.use({ viewport: { width: 1600, height: 900 }, deviceScaleFactor: 2 })
 
   test('deep-space mode stays unobstructed at high resolution', async ({ page }) => {
-    await installKomariFixture(page, { dark: true, visitorInfoEnabled: false })
+    await installKomariFixture(page, { dark: true, visitorInfoEnabled: false, pingTaskOrdering: true })
     await openStablePage(page)
 
     await expect(page.getByText('棋士', { exact: true })).toHaveCount(0)
