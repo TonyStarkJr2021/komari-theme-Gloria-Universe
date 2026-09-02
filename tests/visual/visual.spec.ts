@@ -548,6 +548,28 @@ test('detail ping requests stay scoped to the current node', async ({ page }) =>
   expect(new Set(detailPingCalls.map(call => call.params.entity_id))).toEqual(new Set([currentUuid]))
 })
 
+for (const device of [
+  { name: 'desktop', width: 1280, height: 720 },
+  { name: 'mobile', width: 390, height: 844 },
+]) {
+  test(`node detail navigation renders without refresh on ${device.name}`, async ({ page }) => {
+    const currentUuid = '00000000-0000-4000-8000-000000000001'
+    await page.setViewportSize({ width: device.width, height: device.height })
+    await installKomariFixture(page, { dark: true })
+    await page.goto('/')
+    await expect(page.getByRole('heading', { name: 'Komari Visual Lab' })).toBeVisible()
+
+    await page.getByRole('button', { name: '查看节点 主控-洛杉矶 详情' }).click()
+    await expect(page).toHaveURL(`/instance/${currentUuid}`)
+    await expect(page.locator('.instance-detail')).toBeVisible()
+    await expect(page.getByText('硬件信息')).toBeVisible()
+
+    await page.getByRole('button', { name: '返回首页' }).click()
+    await expect(page).toHaveURL('/')
+    await expect(page.getByRole('button', { name: '查看节点 主控-洛杉矶 详情' })).toBeVisible()
+  })
+}
+
 test('detail ping tasks follow the backend task order', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 })
   await installKomariFixture(page, { pingTaskOrdering: true })
